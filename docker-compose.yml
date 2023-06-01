@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - '4566:4566'
+    environment:
+      - SERVICES=s3
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - 'localstackdata:/tmp'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+
+  mongo:
+    image: mongo:4.2.22
+    volumes:
+      - mongodata:/data/db
+      - ./dumps:/opt/dumps
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    command: mongod --wiredTigerCacheSizeGB 1.5
+
+volumes:
+  localstackdata:
+  mongodata:
