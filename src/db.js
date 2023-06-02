@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { DB_CONNECTION_STRING } = require('./constants');
 const { Schema } = mongoose;
 
 function createFileUploadSchema() {
@@ -21,9 +22,7 @@ function createFileUploadSchema() {
 }
 
 async function main() {
-  await mongoose.connect(
-    'mongodb://root:root@localhost:27017/express-test-app?authSource=admin',
-  );
+  await mongoose.connect(DB_CONNECTION_STRING);
   console.log(`MongoDB connected.`);
 }
 

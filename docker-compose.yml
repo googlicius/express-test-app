@@ -17,7 +17,7 @@ services:
       - mongodata:/data/db
       - ./dumps:/opt/dumps
     ports:
-      - 27017:27017
+      - 27018:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root

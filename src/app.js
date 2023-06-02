@@ -9,6 +9,9 @@ const {
 const multer = require('multer');
 const contentDisposition = require('content-disposition');
 const { FileUploadModel } = require('./db');
+const { writeStream } = require('./kafka');
+
+require('./agenda');
 
 const defaultDiskName = 's3';
 
@@ -24,6 +27,10 @@ Storage.config({
       forcePathStyle: true,
       region: 'ap-southeast-1',
       endpoint: 'http://localhost:4566',
+      credentials: {
+        accessKeyId: 'faked',
+        secretAccessKey: 'faked',
+      },
     },
     {
       driver: LocalDriver,
@@ -56,14 +63,20 @@ app.post('/upload', multer().single('file'), async (req, res) => {
     'upload/' + req.file.originalname,
   );
 
-  res.json(
-    await FileUploadModel.create({
-      name: result.name,
-      path: result.path,
-      disk: storage.name,
-      formats: result.formats,
-    }),
-  );
+  const fileUpload = await FileUploadModel.create({
+    name: result.name,
+    path: result.path,
+    disk: storage.name,
+    formats: result.formats,
+  });
+
+  const queued = writeStream.write(JSON.stringify(fileUpload));
+
+  if (queued) {
+    console.log('Message is queued');
+  }
+
+  res.json(fileUpload);
 });
 
 app.get('/file-upload/:path', async (req, res) => {
