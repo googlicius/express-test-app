@@ -1,13 +1,34 @@
 const Kafka = require('node-rdkafka');
 const { KAFKA_URL } = require('./constants');
 
+const TOPIC_NAME = 'express-test-app-topic';
+
+const client = Kafka.AdminClient.create({
+  'client.id': 'kafka-admin',
+  'metadata.broker.list': KAFKA_URL,
+});
+
+client.createTopic(
+  {
+    topic: TOPIC_NAME,
+    num_partitions: 1,
+    replication_factor: 1,
+  },
+  function (err) {
+    if (err) {
+      console.error(err.message);
+    }
+    // Done!
+  },
+);
+
 const writeStream = Kafka.Producer.createWriteStream(
   {
     'metadata.broker.list': KAFKA_URL,
   },
   {},
   {
-    topic: 'express-test-app-topic',
+    topic: TOPIC_NAME,
   },
 );
 
@@ -26,18 +47,18 @@ const readStream = Kafka.KafkaConsumer.createReadStream(
   },
   {},
   {
-    topics: ['express-test-app-topic'],
+    topics: [TOPIC_NAME],
   },
 );
 
 const readStream2 = Kafka.KafkaConsumer.createReadStream(
   {
     'group.id': 'kafka',
-    'metadata.broker.list': 'localhost:9092',
+    'metadata.broker.list': KAFKA_URL,
   },
   {},
   {
-    topics: ['express-test-app-topic'],
+    topics: [TOPIC_NAME],
   },
 );
 

@@ -31,10 +31,12 @@ async function test() {
   await agenda.cancel({ name: JOBS.runEvery.name });
 
   agenda.define(JOBS.runEvery.name, async (job) => {
-    console.log(`RUN JOB ${JOBS.runEvery.name}`);
+    console.log(`RUN JOB ${JOBS.runEvery.name} ${JOBS.runEvery.cron}`);
 
-    job.repeatEvery(JOBS.runEvery.cron);
-    job.save();
+    if (!job.attrs.repeatInterval) {
+      job.repeatEvery(JOBS.runEvery.cron);
+      job.save();
+    }
   });
 
   await agenda.schedule(JOBS.runAfter.cron, [JOBS.runEvery.name]);

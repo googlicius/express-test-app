@@ -1,46 +1,15 @@
 const express = require('express');
 const app = express();
 const { default: Storage } = require('@file-storage/core');
-const { default: S3Driver } = require('@file-storage/s3');
-const { default: LocalDriver } = require('@file-storage/local');
-const {
-  default: ImageManipulation,
-} = require('@file-storage/image-manipulation');
 const multer = require('multer');
 const contentDisposition = require('content-disposition');
 const { FileUploadModel } = require('./db');
 const { writeStream } = require('./kafka');
+const { defaultDiskName } = require('./storage');
+const services = require('./services');
 
 require('./agenda');
-
-const defaultDiskName = 's3';
-
-Storage.config({
-  uniqueFileName: true,
-  plugins: [ImageManipulation],
-  defaultDiskName,
-  diskConfigs: [
-    {
-      driver: S3Driver,
-      name: 's3',
-      bucketName: 'bucket',
-      forcePathStyle: true,
-      region: 'ap-southeast-1',
-      endpoint: 'http://localhost:4566',
-      credentials: {
-        accessKeyId: 'faked',
-        secretAccessKey: 'faked',
-      },
-    },
-    {
-      driver: LocalDriver,
-      name: 'local',
-      root: 'storage',
-    },
-  ],
-});
-
-Storage.instance().setupMockS3('bucket');
+require('./xlsx');
 
 const PORT = 3000;
 
@@ -57,18 +26,11 @@ app.get('/upload', (req, res) => {
 });
 
 app.post('/upload', multer().single('file'), async (req, res) => {
-  const storage = req.body.disk === 'local' ? Storage.disk('local') : Storage;
-  const result = await storage.put(
+  const fileUpload = await services.upload(
     req.file.buffer,
-    'upload/' + req.file.originalname,
+    req.file.originalname,
+    req.body.disk,
   );
-
-  const fileUpload = await FileUploadModel.create({
-    name: result.name,
-    path: result.path,
-    disk: storage.name,
-    formats: result.formats,
-  });
 
   const queued = writeStream.write(JSON.stringify(fileUpload));
 
