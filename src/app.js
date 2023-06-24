@@ -7,9 +7,9 @@ const { FileUploadModel } = require('./db');
 const { writeStream } = require('./kafka');
 const { defaultDiskName } = require('./storage');
 const services = require('./services');
+const xlsx = require('./xlsx');
 
 require('./agenda');
-require('./xlsx');
 
 const PORT = 3000;
 
@@ -61,6 +61,11 @@ app.get('/file-upload/:path', async (req, res) => {
   } catch (error) {
     res.send(error.message);
   }
+});
+
+app.get('/export-excel', async (req, res) => {
+  const result = await xlsx.exportExampleFile();
+  res.json(result);
 });
 
 app.listen(PORT, () => {

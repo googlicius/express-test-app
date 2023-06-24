@@ -34,12 +34,14 @@ async function test() {
     console.log(`RUN JOB ${JOBS.runEvery.name} ${JOBS.runEvery.cron}`);
 
     if (!job.attrs.repeatInterval) {
-      job.repeatEvery(JOBS.runEvery.cron);
+      job.repeatEvery(job.attrs.data.cron || JOBS.runEvery.cron);
       job.save();
     }
   });
 
-  await agenda.schedule(JOBS.runAfter.cron, [JOBS.runEvery.name]);
+  await agenda.schedule(JOBS.runAfter.cron, [JOBS.runEvery.name], {
+    cron: JOBS.runEvery.cron,
+  });
 
   await agenda.start();
 }

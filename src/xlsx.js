@@ -47,7 +47,7 @@ async function exportExampleFile() {
 
   const fileBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
-  await services.upload(fileBuffer, 'test-excel-export-2.xlsx', 's3');
+  return services.upload(fileBuffer, 'test-excel-export-3.xlsx');
 }
 
 module.exports = {
