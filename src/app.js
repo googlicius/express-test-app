@@ -8,10 +8,9 @@ const { writeStream } = require('./kafka');
 const { defaultDiskName } = require('./storage');
 const services = require('./services');
 const xlsx = require('./xlsx');
+const { PORT } = require('./config');
 
 require('./agenda');
-
-const PORT = 3000;
 
 app.set('view engine', 'hbs');
 
@@ -26,19 +25,31 @@ app.get('/upload', (req, res) => {
 });
 
 app.post('/upload', multer().single('file'), async (req, res) => {
-  const fileUpload = await services.upload(
-    req.file.buffer,
-    req.file.originalname,
-    req.body.disk,
-  );
+  console.log('REQ', req.body);
+  if (req.body.dzuuid) {
+    // Chunk upload
+    const result = await services.chunkUpload(
+      req.file.buffer,
+      req.file.originalname,
+      req.body,
+    );
 
-  const queued = writeStream.write(JSON.stringify(fileUpload));
+    res.json(result);
+  } else {
+    const fileUpload = await services.upload(
+      req.file.buffer,
+      req.file.originalname,
+      req.body.disk,
+    );
 
-  if (queued) {
-    console.log('Message is queued');
+    const queued = writeStream.write(JSON.stringify(fileUpload));
+
+    if (queued) {
+      console.log('Message is queued');
+    }
+
+    res.json(fileUpload);
   }
-
-  res.json(fileUpload);
 });
 
 app.get('/file-upload/:path', async (req, res) => {
