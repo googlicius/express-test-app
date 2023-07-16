@@ -25,7 +25,6 @@ app.get('/upload', (req, res) => {
 });
 
 app.post('/upload', multer().single('file'), async (req, res) => {
-  console.log('REQ', req.body);
   if (req.body.dzuuid) {
     // Chunk upload
     const result = await services.chunkUpload(

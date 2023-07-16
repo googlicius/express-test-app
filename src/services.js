@@ -31,7 +31,7 @@ async function chunkUpload(data, fileName, reqBody) {
     }).put(data, path);
 
     await FileUploadModel.create({
-      name: result.name,
+      name: fileName,
       path: result.path,
       disk: reqBody.disk,
     });
